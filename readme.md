@@ -12,7 +12,7 @@ The **Website Tracker** Chrome extension helps you monitor and manage your web b
 - **Popup Analytics:** Clicking on the extension icon opens a popup displaying the time spent on the currently open website.
 - **Daily and Monthly Analytics:** View detailed analytics of your website usage on a daily and monthly basis.
 - **Pie Chart:** Provides a pie chart summarizing the overall distribution of your time spent on different websites.
-- **Website Limitations:**
+- **You can limit the website usage to:**
   - **None:** No limitations on website usage.
   - **Ignore:** Ignores tracking for specified websites.
   - **Time Limit:** Sets a daily time limit for specific websites. Exceeding the limit may block the website for the remainder of the day.
