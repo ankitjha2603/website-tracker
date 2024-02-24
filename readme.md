@@ -26,7 +26,7 @@ To install the extension, follow these steps:
 1. Clone the repository to your local machine:
 
    ````bash
-   git clone https://github.com/ankitjha2603/website-tracker.git```
+   git clone https://github.com/ankitjha2603/website-tracker.git
    ````
 
 2. Open Chrome and navigate to chrome://extensions/.
