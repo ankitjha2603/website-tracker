@@ -48,7 +48,7 @@ To install the extension, follow these steps:
 
 This Chrome extension leverages a stack of technologies, with a primary focus on JavaScript:
 
-- **JavaScript (High Priority)**: The core programming language driving the dynamic behavior and functionality of the extension.
+- **JavaScript**: The core programming language driving the dynamic behavior and functionality of the extension.
 
 - **HTML**: Used for structuring the content and defining the basic layout of the extension.
 
