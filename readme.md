@@ -2,8 +2,9 @@
 
 The **Website Tracker** Chrome extension helps you monitor and manage your web browsing habits by tracking the time spent on each website. Additionally, it provides analytics in the form of graphs and charts, allowing you to visualize your usage patterns.
 
-<img src="assets/video/popup.gif">
-<img src="assets/video/graph.gif">
+![The "Website Tracker" Chrome extension helps you monitor and manage your web browsing habits by tracking the time spent on each website. Additionally, it provides analytics in the form of graphs and charts, allowing you to visualize your usage patterns.](assets/video/popup.gif)
+![The "Website Tracker" Chrome extension helps you monitor and manage your web browsing habits by tracking the time spent on each website. Additionally, it provides analytics in the form of graphs and charts, allowing you to visualize your usage patterns.](assets/video/graph.gif)
+
 
 ## Features
 
