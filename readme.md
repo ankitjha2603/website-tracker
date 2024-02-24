@@ -2,6 +2,9 @@
 
 The **Website Tracker** Chrome extension helps you monitor and manage your web browsing habits by tracking the time spent on each website. Additionally, it provides analytics in the form of graphs and charts, allowing you to visualize your usage patterns.
 
+<img src="assets/video/popup.gif">
+<img src="assets/video/graph.gif">
+
 ## Features
 
 - **Real-time Tracking:** Tracks the websites you are currently using in real-time.
@@ -14,8 +17,6 @@ The **Website Tracker** Chrome extension helps you monitor and manage your web b
   - **Time Limit:** Sets a daily time limit for specific websites. Exceeding the limit may block the website for the remainder of the day.
   - **Block:** Blocks access to specified websites.
 
-<img src="assets/video/popup.gif">
-<img src="assets/video/graph.gif">
 
 ## Installation
 
