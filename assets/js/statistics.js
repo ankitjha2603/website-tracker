@@ -16,6 +16,11 @@ const monthAbbr = {
 };
 const dpColor = {};
 let data;
+let destroy = {
+  dw: undefined,
+  mw: undefined,
+  ws: undefined,
+};
 //---------------------------------------------->
 
 //---------------------------------------------->
@@ -46,9 +51,24 @@ const randomNum = (max = 256) => Math.floor(Math.random() * max);
 const insert0 = (arr, ele) => [ele, ...arr];
 const refresh = () => {
   hostInfo();
-  periodByGraph("#dayWise", "perDay", getAllDatesBetween, 2 * 60 * 60);
-  periodByGraph("#monthWise", "perMonth", getBetweenMonth, 2 * 60 * 60 * 30);
-  siteWiseChart();
+  if (destroy.dw != undefined) {
+    destroy.dw.destroy();
+    destroy.mw.destroy();
+    destroy.sw.destroy();
+  }
+  destroy.dw = periodByGraph(
+    "#dayWise",
+    "perDay",
+    getAllDatesBetween,
+    2 * 60 * 60
+  );
+  destroy.mw = periodByGraph(
+    "#monthWise",
+    "perMonth",
+    getBetweenMonth,
+    2 * 60 * 60 * 30
+  );
+  destroy.sw = siteWiseChart();
 };
 const getRandomColor = (ds) => {
   if (dpColor[ds] === undefined)
@@ -233,6 +253,7 @@ const periodByGraph = (canva_id, period, getAll, recommendedScreenTime) => {
     data: linedata,
     options: options,
   });
+  return myLineChart;
 };
 const siteWiseChart = () => {
   let allSite = Object.keys(data).filter(
@@ -250,8 +271,9 @@ const siteWiseChart = () => {
       },
     ],
   };
+  let canvas = select("#siteWise");
+  let ctx = canvas.getContext("2d");
 
-  let ctx = select("#siteWise").getContext("2d");
   let totalTime = allSite.map((ds) => data[ds].all).reduce((t1, t2) => t1 + t2);
   let myPieChart = new Chart(ctx, {
     type: "pie",
@@ -267,6 +289,7 @@ const siteWiseChart = () => {
       },
     },
   });
+  return myPieChart;
 };
 const hostInfo = () => {
   const tbody = select("tbody");
