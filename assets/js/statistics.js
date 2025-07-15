@@ -154,37 +154,70 @@ const read = (key, process) =>
 
 //---------------------------------------------->
 //SECTION graph and table function
+const threshold = 0.015; // 2%
 const periodByGraph = (canva_id, period, getAll, recommendedScreenTime) => {
   let start, end;
   let siteList = new Array();
+  let totalTime = 0;
+
+  // Step 1: Identify all sites & get total time
   for (const key in data) {
     if (data[key].limit.type === "Ignore") continue;
     siteList.push(key);
-    Object.keys(data[key][period]).forEach((d_day) => {
+
+    for (const d_day in data[key][period]) {
+      totalTime += data[key][period][d_day] || 0;
       [start, end] = [getMinMax(start, d_day, -1), getMinMax(end, d_day, 1)];
-    });
+    }
   }
+
   if (!siteList.length) {
     select(canva_id).style.display = "none";
     return 0;
   }
   select(canva_id).style.display = "block";
-  siteList.sort((s1, s2) => data[s2].all - data[s1].all);
+
+  // Step 2: Group small contributors into "Others"
+  const majorSites = [];
+  const othersData = {};
+
+  siteList.forEach((site) => {
+    let siteTime = 0;
+    for (const d_day in data[site][period]) {
+      siteTime += data[site][period][d_day] || 0;
+    }
+    if (siteTime / totalTime >= threshold) {
+      majorSites.push(site);
+    } else {
+      for (const d_day in data[site][period]) {
+        othersData[d_day] = (othersData[d_day] || 0) + (data[site][period][d_day] || 0);
+      }
+    }
+  });
+
+  if (Object.keys(othersData).length > 0) {
+    data["Others"] = { [period]: othersData, all: Object.values(othersData).reduce((a, b) => a + b, 0), limit: { type: "Include" } };
+    majorSites.push("Others");
+  }
+
+  // Step 3: Prepare datasets
   const linedata = {
     labels: getAll(start, end),
-    datasets: siteList.map((ds) => ({
+    datasets: majorSites.map((ds) => ({
       label: ds,
       data: [],
       fill: false,
       borderColor: getRandomColor(ds),
     })),
   };
+
   const sum = {
     label: "all",
     data: linedata.labels.map((e) => 0),
     fill: false,
     borderColor: "rgb(0,0,0)",
   };
+
   const recommendedScreenTimeLine = {
     label: "Recommended Screen Time",
     data: linedata.labels.map((e) => recommendedScreenTime),
@@ -195,14 +228,20 @@ const periodByGraph = (canva_id, period, getAll, recommendedScreenTime) => {
     borderWidth: 2,
     borderDash: [5, 5],
   };
+
+  // Step 4: Fill data points
   linedata.labels.forEach((ddate, index) => {
     linedata.datasets.forEach((dline) => {
       const temp = data[dline.label][period][ddate];
-      dline.data.push(temp ? temp : 0);
-      sum.data[index] += temp ? temp : 0;
+      const value = temp || 0;
+      dline.data.push(value);
+      sum.data[index] += value;
     });
   });
+
   linedata.datasets = [recommendedScreenTimeLine, sum, ...linedata.datasets];
+
+  // Step 5: Create chart
   const options = {
     responsive: true,
     maintainAspectRatio: false,
@@ -210,8 +249,7 @@ const periodByGraph = (canva_id, period, getAll, recommendedScreenTime) => {
       yAxes: [
         {
           ticks: {
-            // This callback function formats the tick labels
-            callback: function (time, index, labels) {
+            callback: function (time) {
               if (time === 0) return "0 sec";
               const hours = Math.floor(time / 3600);
               const minutes = Math.floor((time % 3600) / 60);
@@ -229,7 +267,7 @@ const periodByGraph = (canva_id, period, getAll, recommendedScreenTime) => {
       xAxes: [
         {
           ticks: {
-            callback: function (originalDate, index, labels) {
+            callback: function (originalDate) {
               let parts = originalDate.split("-").map(Number);
               parts[parts.length - 2] = monthAbbr[parts[parts.length - 2]];
               return parts.join(" ");
@@ -247,50 +285,86 @@ const periodByGraph = (canva_id, period, getAll, recommendedScreenTime) => {
       },
     },
   };
+
   const ctx = select(canva_id).getContext("2d");
   const myLineChart = new Chart(ctx, {
     type: "line",
     data: linedata,
     options: options,
   });
+
   return myLineChart;
 };
+
 const siteWiseChart = () => {
   let allSite = Object.keys(data).filter(
     (ds) => data[ds].limit.type != "Ignore"
   );
   if (allSite.length == 0) return;
+  
   allSite.sort((s1, s2) => data[s2].all - data[s1].all);
+
+  let totalTime = allSite.reduce((sum, site) => sum + data[site].all, 0);
+  let majorSites = [];
+  let otherTime = 0;
+
+  allSite.forEach((site) => {
+    let percent = data[site].all / totalTime;
+    if (percent >= threshold) {
+      majorSites.push(site);
+    } else {
+      otherTime += data[site].all;
+    }
+  });
+
+  // Add "Others" category
+  if (otherTime > 0) {
+    majorSites.push("Others");
+    data["Others"] = { all: otherTime };
+  }
+
   let siteWiseData = {
-    labels: allSite,
+    labels: majorSites,
     datasets: [
       {
-        data: allSite.map((ds) => data[ds].all),
-        backgroundColor: allSite.map((ds) => getRandomColor(ds)),
+        data: majorSites.map((ds) => data[ds].all),
+        backgroundColor: majorSites.map((ds) => getRandomColor(ds)),
         borderWidth: 0.1,
       },
     ],
   };
-  let canvas = select("#siteWise");
+
+  let canvas = document.querySelector("#siteWise");
   let ctx = canvas.getContext("2d");
 
-  let totalTime = allSite.map((ds) => data[ds].all).reduce((t1, t2) => t1 + t2);
   let myPieChart = new Chart(ctx, {
     type: "pie",
     data: siteWiseData,
     options: {
-      tooltips: {
-        callbacks: {
-          label: ({ datasetIndex, index }, data) => {
-            let currentValue = data.datasets[datasetIndex].data[index];
-            return ((currentValue / totalTime) * 100).toFixed(2) + "%";
+      plugins: {
+        tooltip: {
+          callbacks: {
+            label: ({ dataset, dataIndex }) => {
+              let value = dataset.data[dataIndex];
+              return ((value / totalTime) * 100).toFixed(2) + "%";
+            },
+          },
+        },
+        legend: {
+          position: 'right',
+          labels: {
+            font: {
+              size: 12,
+            },
           },
         },
       },
     },
   });
+
   return myPieChart;
 };
+
 const hostInfo = () => {
   const tbody = select("tbody");
   const res = [];
